@@ -31,7 +31,7 @@ jobs:
         run: |
           ./build.sh
           codesign --verify --deep --strict dist/ClipKeep.app
-          lipo -verify_arch ${{ matrix.arch }} dist/ClipKeep.app/Contents/MacOS/ClipKeep
+          lipo dist/ClipKeep.app/Contents/MacOS/ClipKeep -verify_arch ${{ matrix.arch }}
           plutil -lint dist/ClipKeep.app/Contents/Info.plist
       - name: Archive application preserving bundle metadata
         run: ditto -c -k --sequesterRsrc --keepParent dist/ClipKeep.app dist/ClipKeep-macos-${{ matrix.arch }}.zip
