@@ -1,0 +1,43 @@
+name: macOS build and regression tests
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  macos:
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - runner: macos-15
+            arch: arm64
+          - runner: macos-15-intel
+            arch: x86_64
+    runs-on: ${{ matrix.runner }}
+    defaults:
+      run:
+        working-directory: macos
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          persist-credentials: false
+      - name: Toolchain
+        run: swift --version
+      - name: Regression tests
+        run: ./test.sh
+      - name: Build and validate application
+        run: |
+          ./build.sh
+          codesign --verify --deep --strict dist/ClipKeep.app
+          lipo -verify_arch ${{ matrix.arch }} dist/ClipKeep.app/Contents/MacOS/ClipKeep
+          plutil -lint dist/ClipKeep.app/Contents/Info.plist
+      - name: Archive application preserving bundle metadata
+        run: ditto -c -k --sequesterRsrc --keepParent dist/ClipKeep.app dist/ClipKeep-macos-${{ matrix.arch }}.zip
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: ClipKeep-macos-${{ matrix.arch }}
+          path: macos/dist/ClipKeep-macos-${{ matrix.arch }}.zip
+          if-no-files-found: error
+          retention-days: 14

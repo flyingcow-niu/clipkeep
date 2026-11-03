@@ -1,0 +1,14 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>net10.0-windows</TargetFramework>
+    <UseWPF>true</UseWPF>
+    <UseWindowsForms>true</UseWindowsForms>
+    <EnableWindowsTargeting>true</EnableWindowsTargeting>
+    <ImplicitUsings>disable</ImplicitUsings>
+    <ApplicationIcon>Assets/ClipKeep.ico</ApplicationIcon>
+    <Version>0.1.0</Version>
+    <AssemblyName>ClipKeep</AssemblyName>
+  </PropertyGroup>
+  <ItemGroup><ProjectReference Include="../ClipKeep.Core/ClipKeep.Core.csproj" /></ItemGroup>
+</Project>
