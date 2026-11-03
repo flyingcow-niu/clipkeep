@@ -62,9 +62,8 @@ class CollectionTests(unittest.TestCase):
         ET.SubElement(props, 'RuntimeIdentifier').text = 'win-x64'
         items = ET.SubElement(project, 'ItemGroup')
         host = ET.SubElement(items, 'AppHostPack', Include='AppHost')
-        ET.SubElement(host, 'NuGetPackageId').text = 'Microsoft.NETCore.App.Host.win-x64'
-        ET.SubElement(host, 'NuGetPackageVersion').text = '10.0.99'
-        # No PackageDirectory: the SDK supplied the executable, not a restored package.
+        # Actual SDK-installed metadata omits both NuGet package ID and version.
+        ET.SubElement(host, 'PackageDirectory').text = str(self.root / 'sdk' / 'packs' / 'Microsoft.NETCore.App.Host.win-x64' / '10.0.99')
         tree.write(self.project, encoding='utf-8')
         result = subprocess.run([DOTNET, 'msbuild', str(self.project), '-t:RestoreAppHostNotices',
                                  '-getItem:PackageDownload', '-nologo'], capture_output=True, text=True)

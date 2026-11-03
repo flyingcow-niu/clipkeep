@@ -4,6 +4,13 @@
   <Target Name="RestoreAppHostNotices" AfterTargets="ProcessFrameworkReferences"
           Condition="'$(SelfContained)' == 'true' and '$(RuntimeIdentifier)' != ''">
     <ItemGroup>
+      <!-- Installed packs have PackageDirectory and Path, but no NuGet identity.
+           Preserve Path (the executable), and resolve notices from NuGet instead. -->
+      <AppHostPack>
+        <NuGetPackageId Condition="'%(AppHostPack.NuGetPackageId)' == ''">$([System.IO.Path]::GetFileName($([System.IO.Path]::GetDirectoryName('%(AppHostPack.PackageDirectory)'))))</NuGetPackageId>
+        <NuGetPackageVersion Condition="'%(AppHostPack.NuGetPackageVersion)' == ''">$([System.IO.Path]::GetFileName('%(AppHostPack.PackageDirectory)'))</NuGetPackageVersion>
+        <PackageDirectory></PackageDirectory>
+      </AppHostPack>
       <PackageDownload Remove="@(AppHostPack->'%(NuGetPackageId)')" />
       <PackageDownload Include="@(AppHostPack->'%(NuGetPackageId)')" Version="[%(AppHostPack.NuGetPackageVersion)]" />
     </ItemGroup>
