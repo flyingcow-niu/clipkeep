@@ -46,3 +46,9 @@ dotnet build ClipKeep.Windows/ClipKeep.Windows.csproj -c Release
 - Windows 代码签名、安装器、升级迁移及备份恢复。
 
 所有平台验收状态见 [平台状态](../docs/PLATFORM_STATUS.md)。编译通过和窗口构造测试通过不代表真实桌面操作已经全部验证。
+
+## 随包许可证
+
+自包含发布会自动携带项目的 `LICENSE.txt`、分发说明 `THIRD-PARTY-NOTICES.txt`，以及 `licenses/` 下的 .NET 运行时、Windows Desktop 运行时和可执行宿主原始许可文件。`licenses/packages.txt` 记录实际构建所用包的 ID 和版本；原始文件逐字节复制，不以项目自己的 MIT 声明替代。
+
+此步骤也适用于直接执行 `dotnet publish --self-contained true`。必需的上游许可证或 .NET 第三方声明缺失时发布失败。CI 验证目录和最终 ZIP 中的声明，并检查版本与运行时配置一致。重新分发时保留这些文件。Windows Desktop 包目前仅提供 LICENSE；若未来提供独立声明，构建也会一并复制。

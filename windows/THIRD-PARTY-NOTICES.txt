@@ -1,0 +1,22 @@
+ClipKeep Windows distribution notices
+
+ClipKeep's own source is offered under the MIT license in LICENSE.txt.
+That license does not replace the licenses of bundled third-party components.
+
+This self-contained distribution includes the .NET runtime, Windows Desktop
+runtime (WPF and Windows Forms), and the .NET executable host, distributed by
+Microsoft / the .NET Foundation and contributors.
+
+licenses/packages.txt identifies the exact SDK-resolved package IDs and versions.
+Each licenses/<package-id>/<version>/ directory contains the original LICENSE
+and, where supplied by that package, THIRD-PARTY-NOTICES files copied unchanged.
+The Windows Desktop runtime package currently supplies LICENSE without a separate
+THIRD-PARTY-NOTICES file. Any such file supplied in a future version is also copied.
+
+Upstream projects:
+https://github.com/dotnet/runtime
+https://github.com/dotnet/wpf
+https://github.com/dotnet/winforms
+
+Retain LICENSE.txt, this file, and the entire licenses directory when
+redistributing the portable application. Do not redistribute only ClipKeep.exe.

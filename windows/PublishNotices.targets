@@ -1,0 +1,30 @@
+<Project>
+  <!-- Use the SDK-resolved package directories, never a floating download or latest cache entry. -->
+  <Target Name="PublishLicenseNotices" AfterTargets="Publish" Condition="'$(SelfContained)' == 'true'">
+    <ItemGroup>
+      <_NoticePack Include="@(ResolvedRuntimePack)"
+                   Condition="'%(ResolvedRuntimePack.FrameworkName)' == 'Microsoft.NETCore.App' or '%(ResolvedRuntimePack.FrameworkName)' == 'Microsoft.WindowsDesktop.App'" />
+      <_NoticePack Include="@(ResolvedAppHostPack)" />
+    </ItemGroup>
+    <Error Condition="'@(_NoticePack->Count())' != '3'" Text="Expected .NET runtime, Windows Desktop runtime and app host packs for license collection. Review changed SDK dependencies." />
+    <Error Condition="'%(_NoticePack.PackageDirectory)' == '' or '%(_NoticePack.NuGetPackageVersion)' == ''" Text="Cannot resolve license source for %(_NoticePack.Identity)." />
+    <Error Condition="!Exists('%(_NoticePack.PackageDirectory)/LICENSE') and !Exists('%(_NoticePack.PackageDirectory)/LICENSE.TXT')"
+           Text="Missing upstream license for %(_NoticePack.Identity)." />
+    <!-- Windows Desktop currently supplies LICENSE only; copy any notices if a future pack adds them. -->
+    <Error Condition="$([System.String]::Copy('%(_NoticePack.NuGetPackageId)').StartsWith('Microsoft.NETCore.App.')) and !Exists('%(_NoticePack.PackageDirectory)/THIRD-PARTY-NOTICES.TXT')"
+           Text="Missing upstream third-party notices for %(_NoticePack.Identity)." />
+    <ItemGroup>
+      <_NoticeFile Include="%(_NoticePack.PackageDirectory)/LICENSE*;%(_NoticePack.PackageDirectory)/THIRD-PARTY-NOTICES*">
+        <Destination>$(PublishDir)licenses/%(_NoticePack.NuGetPackageId)/%(_NoticePack.NuGetPackageVersion)/</Destination>
+      </_NoticeFile>
+    </ItemGroup>
+    <!-- Re-publishing after an SDK update must not leave stale licensing manifests. -->
+    <RemoveDir Directories="$(PublishDir)licenses" />
+    <Copy SourceFiles="@(_NoticeFile)" DestinationFiles="@(_NoticeFile->'%(Destination)%(Filename)%(Extension)')" />
+    <Copy SourceFiles="$(MSBuildThisFileDirectory)../LICENSE" DestinationFiles="$(PublishDir)LICENSE.txt" />
+    <Copy SourceFiles="$(MSBuildThisFileDirectory)THIRD-PARTY-NOTICES.txt" DestinationFolder="$(PublishDir)" />
+    <WriteLinesToFile File="$(PublishDir)licenses/packages.txt"
+                      Lines="@(_NoticePack->'%(NuGetPackageId)|%(NuGetPackageVersion)')"
+                      Overwrite="true" Encoding="UTF-8" />
+  </Target>
+</Project>

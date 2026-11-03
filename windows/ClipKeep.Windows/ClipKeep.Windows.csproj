@@ -11,4 +11,5 @@
     <AssemblyName>ClipKeep</AssemblyName>
   </PropertyGroup>
   <ItemGroup><ProjectReference Include="../ClipKeep.Core/ClipKeep.Core.csproj" /></ItemGroup>
+  <Import Project="../PublishNotices.targets" />
 </Project>

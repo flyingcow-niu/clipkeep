@@ -22,10 +22,16 @@ jobs:
           dotnet-version: '10.0.x'
       - name: Regression and Windows integration checks
         run: ./test.ps1
+      - name: License collection regression checks
+        run: python tests/test-notice-collection.py
       - name: Build self-contained x64 application
         run: ./build.ps1 -Runtime win-x64
+      - name: Validate published license notices
+        run: python tests/verify-notices.py dist/win-x64
       - name: Package portable application
         run: Compress-Archive -Path dist/win-x64/* -DestinationPath dist/ClipKeep-windows-x64.zip
+      - name: Validate notices inside distributable ZIP
+        run: python tests/verify-notices.py dist/ClipKeep-windows-x64.zip
       - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
         with:
           name: ClipKeep-windows-x64
