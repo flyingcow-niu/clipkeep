@@ -21,7 +21,7 @@ internal sealed class ClipboardService(Func<ClipSettings> settings, Action<ClipR
         var sequence = Native.GetClipboardSequenceNumber();
         if (sequence == last) return;
         var config = settings();
-        var source = Native.ForegroundProcess();
+        var source = Native.ClipboardOwnerProcess();
         if (config.Paused || source.Length == 0 || source.Equals("ClipKeep", StringComparison.OrdinalIgnoreCase)
             || config.ExcludedProcesses.Contains(source, StringComparer.OrdinalIgnoreCase)) { last = sequence; return; }
         try

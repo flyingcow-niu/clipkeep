@@ -23,6 +23,7 @@ public partial class App : Application
     private readonly DispatcherTimer purge = new() { Interval = TimeSpan.FromMinutes(10) };
     private SettingsWindow? settingsWindow;
     private bool hotkeyRegistered;
+    private long copyGeneration;
     private const int HotkeyId = 0x434B;
 
     protected override void OnStartup(StartupEventArgs e)
@@ -124,14 +125,21 @@ public partial class App : Application
     }
     internal async void Copy(ClipRecord item, bool paste, bool plain)
     {
+        var generation = ++copyGeneration;
         if (!monitor.Write(item, plain)) return;
+        var clipboardSequence = Native.GetClipboardSequenceNumber();
         var target = panel.PreviousWindow;
+        var request = new PasteRequest(generation, clipboardSequence, target);
         panel.Dismiss(restoreFocus: true);
         if (!paste || !State.Settings.PasteDirectly || target == IntPtr.Zero) return;
         // Wait for the user's shortcut modifiers to be released; don't paste into a newly focused app.
         await Task.Delay(120);
         for (var i = 0; i < 15 && Keyboard.Modifiers != ModifierKeys.None; i++) await Task.Delay(40);
-        if (Keyboard.Modifiers != ModifierKeys.None || Native.GetForegroundWindow() != target || !Native.Paste())
+        if (generation != copyGeneration) return;
+        if (Native.GetClipboardSequenceNumber() != clipboardSequence)
+        { Notify("剪贴板在等待期间发生变化，已取消自动粘贴。"); return; }
+        if (!request.CanSend(copyGeneration, Native.GetClipboardSequenceNumber(), Native.GetForegroundWindow(),
+                Keyboard.Modifiers != ModifierKeys.None) || !Native.Paste())
             Notify("内容已复制；未自动粘贴，请在目标应用按 Ctrl+V（管理员应用可能阻止模拟输入）。");
     }
     private void Notify(string message)

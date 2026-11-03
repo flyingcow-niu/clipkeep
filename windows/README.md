@@ -34,9 +34,9 @@ dotnet build ClipKeep.Windows/ClipKeep.Windows.csproj -c Release
 
 数据保存在 `%LOCALAPPDATA%\ClipKeep\history.dat`，整个快照通过当前 Windows 用户 DPAPI 加密，包括设置和元数据。换账户、重装系统或迁移到另一台电脑后可能无法解密；目前不提供可移植备份恢复。
 
-敏感格式标记和排除进程为尽力保护。默认排除 1Password、Bitwarden、KeePass 和 KeePassXC；设置中输入不带 `.exe` 的进程名。存在任一 Windows 剪贴板历史／云同步 opt-out 格式时保守跳过。不要假设所有密码都会自动被识别。
+敏感格式标记和排除进程为尽力保护。以剪贴板所属进程识别来源；无法确认所属进程时保守跳过。默认排除 1Password、Bitwarden、KeePass 和 KeePassXC；设置中输入不带 `.exe` 的进程名。存在任一 Windows 剪贴板历史／云同步 opt-out 格式时保守跳过。不要假设所有密码都会自动被识别。
 
-单条载荷上限 8 MiB；总载荷上限 64 MiB（即使条数和天数设为 0 也存在）；超出总量时清理最旧的非收藏，收藏不会自动删除。默认保存 30 天、最多 500 条非收藏。文件记录仅保存路径，不复制或备份原文件。
+单条载荷上限 8 MiB；总载荷上限 64 MiB、JSON 序列化后记录上限 96 MiB（即使条数和天数设为 0 也存在）；超出总量时清理最旧的非收藏，收藏不会自动删除。默认保存 30 天、最多 500 条非收藏。文件记录仅保存路径，不复制或备份原文件。
 
 ## 尚未完成
 

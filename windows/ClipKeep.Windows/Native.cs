@@ -24,9 +24,14 @@ internal static class Native
     [DllImport("user32.dll", SetLastError = true)]
     private static extern uint SendInput(uint count, Input[] inputs, int size);
 
-    internal static string ForegroundProcess()
+    [DllImport("user32.dll")]
+    private static extern IntPtr GetClipboardOwner();
+
+    internal static string ClipboardOwnerProcess()
     {
-        GetWindowThreadProcessId(GetForegroundWindow(), out var id);
+        var owner = GetClipboardOwner();
+        if (owner == IntPtr.Zero) return "";
+        GetWindowThreadProcessId(owner, out var id);
         try { return Process.GetProcessById((int)id).ProcessName; }
         catch (ArgumentException) { return ""; }
         catch (InvalidOperationException) { return ""; }

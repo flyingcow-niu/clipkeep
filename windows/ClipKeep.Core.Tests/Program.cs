@@ -47,6 +47,19 @@ try
     try { History.Add(fullFavorites, new ClipRecord { Text = "new" }, settings, now); Check(false, "full favorites reports rejected new capture"); }
     catch (InvalidOperationException) { checks++; }
     Check(fullFavorites.Count == 8 && fullFavorites.All(x => x.Favorite), "failed capture never mutates original history");
+    var escaped = Enumerable.Range(0, 7).Select(i => new ClipRecord {
+        Text = new string('\0', 3_000_000), Created = now.AddMinutes(-i)
+    }).ToList();
+    var stored = History.Prune(escaped, settings with { MaxItems = 0 }, now);
+    var storedJson = System.Text.Json.JsonSerializer.SerializeToUtf8Bytes(stored);
+    Check(storedJson.LongLength <= 96L * 1024 * 1024, "serialized budget accounts for escaped text");
+    var paste = new PasteRequest(3, 12, (nint)42);
+    Check(paste.CanSend(3, 12, (nint)42, false), "paste allowed when operation clipboard and target still match");
+    Check(!paste.CanSend(4, 12, (nint)42, false), "new copy cancels pending paste");
+    Check(!paste.CanSend(3, 13, (nint)42, false), "clipboard change cancels pending paste");
+    Check(!paste.CanSend(3, 12, (nint)43, false), "focus change cancels pending paste");
+    Check(!paste.CanSend(3, 12, (nint)42, true), "held modifiers cancel pending paste");
+    Check(!new PasteRequest(3, 12, 0).CanSend(3, 12, 0, false), "missing target cancels pending paste");
     Console.WriteLine($"{checks} core checks passed");
 }
 catch (Exception error) { Console.Error.WriteLine(error.Message); Environment.ExitCode = 1; }

@@ -27,6 +27,8 @@ public sealed record ClipRecord
     public long PayloadBytes => Encoding.UTF8.GetByteCount(Text) + Encoding.UTF8.GetByteCount(Html ?? "")
         + Encoding.UTF8.GetByteCount(Rtf ?? "") + (ImagePng?.LongLength ?? 0)
         + Files.Sum(path => (long)Encoding.UTF8.GetByteCount(path));
+    [System.Text.Json.Serialization.JsonIgnore]
+    public long SerializedBytes => JsonSerializer.SerializeToUtf8Bytes(this).LongLength;
     public string Fingerprint() => Convert.ToHexString(SHA256.HashData(JsonSerializer.SerializeToUtf8Bytes(
         new { Kind, Text, Html, Rtf, ImagePng, Files })));
 }
@@ -44,6 +46,7 @@ public static class History
 {
     public const long MaxItemBytes = 8 * 1024 * 1024;
     public const long MaxTotalBytes = 64 * 1024 * 1024;
+    public const long MaxSerializedBytes = 96 * 1024 * 1024;
     public static List<ClipRecord> Add(IEnumerable<ClipRecord> records, ClipRecord incoming,
         ClipSettings settings, DateTimeOffset now)
     {
@@ -73,12 +76,14 @@ public static class History
             list.RemoveAll(item => !item.Favorite && !keep.Contains(item.Id));
         }
         var bytes = list.Sum(item => item.PayloadBytes);
+        var storedBytes = list.Sum(item => item.SerializedBytes);
         foreach (var item in list.Where(item => !item.Favorite).Reverse().ToArray())
         {
-            if (bytes <= MaxTotalBytes) break;
-            list.Remove(item); bytes -= item.PayloadBytes;
+            if (bytes <= MaxTotalBytes && storedBytes <= MaxSerializedBytes) break;
+            list.Remove(item); bytes -= item.PayloadBytes; storedBytes -= item.SerializedBytes;
         }
-        if (bytes > MaxTotalBytes) throw new InvalidOperationException("收藏超过 64 MiB，请先减少收藏内容。");
+        if (bytes > MaxTotalBytes || storedBytes > MaxSerializedBytes)
+            throw new InvalidOperationException("收藏超过存储容量，请先减少收藏内容。");
         return list;
     }
     public static IEnumerable<ClipRecord> Search(IEnumerable<ClipRecord> records, string query, bool favorites)
