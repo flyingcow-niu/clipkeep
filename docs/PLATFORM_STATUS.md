@@ -14,7 +14,7 @@ cd macos
 ./build.sh
 ```
 
-CI 使用 macos-15（arm64）和 macos-15-intel（x86_64）分别执行以上命令。首次 CI 实际结果以 Actions 页面为准。
+2026-11-03，提交 `bf814f3` 已在 macos-15（arm64）和 macos-15-intel（x86_64）通过 42 项回归检查、编译、签名与架构校验，并生成 ZIP。[查看验证记录](https://github.com/flyingcow-niu/clipkeep/actions/runs/41610002137)。
 
 ### 发布前剩余工作
 
@@ -46,7 +46,7 @@ pwsh ./test.ps1
 pwsh ./build.ps1 -Runtime win-x64
 ```
 
-本机为 macOS，可以测试 .NET 核心规则、交叉编译 WPF，但不能运行 WPF 或 DPAPI。Windows 专用检查交由 GitHub Actions 的 Windows runner 执行。首次 CI 实际结果以 Actions 页面为准。
+2026-11-03，提交 `bf814f3` 已通过本机 27 项核心检查和 WPF 交叉编译（零警告、零错误），并在 GitHub Actions Windows runner 通过核心检查、DPAPI 加密／损坏文件保护和 WPF 窗口构造检查，完成自包含 x64 ZIP 打包。[查看验证记录](https://github.com/flyingcow-niu/clipkeep/actions/runs/41610002290)。这不替代真实桌面的跨应用验收。
 
 ### 发布前剩余工作
 
@@ -55,3 +55,5 @@ pwsh ./build.ps1 -Runtime win-x64
 3. **多屏与性能**：当前面板定位主屏；历史快照整包加密写入，需验证大容量下响应并按结果改为增量存储。
 4. **分发与恢复**：Windows 签名、安装器、版本升级／回滚和可迁移备份；目前只有未签名便携包。
 5. **ARM64**：允许编译目标，但尚无原生设备运行验收；不将 x64 CI 当成 ARM64 验证。
+
+人工验收步骤见 [桌面验收清单](MANUAL_TESTS.md)。

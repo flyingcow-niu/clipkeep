@@ -14,11 +14,11 @@
 
 ## Tasks
 - [x] Inspect and test macOS source; verify the documented build path rather than a one-off compiler invocation.
-- [ ] Build Windows preview from scratch, test core rules and DPAPI/WPF construction, and document verified build commands.
+- [x] Build Windows preview from scratch, test core rules and DPAPI/WPF construction, and document verified build commands.
 - [x] Add project documentation, MIT license, contributing/security guidance, ignores, and native macOS/Windows CI.
 - [x] Inspect the exact publication file list and scan source for private data and secrets.
-- [ ] Commit and push to the authorized empty GitHub repository without overwriting remote history.
-- [ ] Inspect CI results and report remaining platform/signing/runtime limitations.
+- [x] Commit and push to the authorized empty GitHub repository without overwriting remote history.
+- [x] Inspect CI results and report remaining platform/signing/runtime limitations.
 
 ## Review focus
 - Ad-hoc updates can invalidate macOS accessibility authorization.
