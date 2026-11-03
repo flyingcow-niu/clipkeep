@@ -1,5 +1,6 @@
 """Exercise the real MSBuild collector with isolated package directories."""
 import os
+import json
 from pathlib import Path
 import subprocess
 import tempfile
@@ -53,6 +54,24 @@ class CollectionTests(unittest.TestCase):
                 copied = self.output / 'licenses' / package.name / '10.0.99' / source.name
                 self.assertEqual(copied.read_bytes(), source.read_bytes())
         self.assertTrue((self.output / 'LICENSE.txt').is_file())
+
+    def test_sdk_installed_host_also_requests_exact_nuget_package(self):
+        tree = ET.parse(self.project)
+        project = tree.getroot()
+        props = ET.SubElement(project, 'PropertyGroup')
+        ET.SubElement(props, 'RuntimeIdentifier').text = 'win-x64'
+        items = ET.SubElement(project, 'ItemGroup')
+        host = ET.SubElement(items, 'AppHostPack', Include='AppHost')
+        ET.SubElement(host, 'NuGetPackageId').text = 'Microsoft.NETCore.App.Host.win-x64'
+        ET.SubElement(host, 'NuGetPackageVersion').text = '10.0.99'
+        # No PackageDirectory: the SDK supplied the executable, not a restored package.
+        tree.write(self.project, encoding='utf-8')
+        result = subprocess.run([DOTNET, 'msbuild', str(self.project), '-t:RestoreAppHostNotices',
+                                 '-getItem:PackageDownload', '-nologo'], capture_output=True, text=True)
+        self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+        packages = json.loads(result.stdout)['Items']['PackageDownload']
+        self.assertEqual([(p['Identity'], p['Version']) for p in packages],
+                         [('Microsoft.NETCore.App.Host.win-x64', '[10.0.99]')])
 
     def test_missing_upstream_license_blocks_publication(self):
         (self.packs[1] / 'LICENSE').unlink()

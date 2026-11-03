@@ -1,4 +1,13 @@
 <Project>
+  <!-- SDK-installed app hosts omit package-level notices. Restore the exact host
+       package as well, even when its executable already exists in the SDK. -->
+  <Target Name="RestoreAppHostNotices" AfterTargets="ProcessFrameworkReferences"
+          Condition="'$(SelfContained)' == 'true' and '$(RuntimeIdentifier)' != ''">
+    <ItemGroup>
+      <PackageDownload Remove="@(AppHostPack->'%(NuGetPackageId)')" />
+      <PackageDownload Include="@(AppHostPack->'%(NuGetPackageId)')" Version="[%(AppHostPack.NuGetPackageVersion)]" />
+    </ItemGroup>
+  </Target>
   <!-- Use the SDK-resolved package directories, never a floating download or latest cache entry. -->
   <Target Name="PublishLicenseNotices" AfterTargets="Publish" Condition="'$(SelfContained)' == 'true'">
     <ItemGroup>
